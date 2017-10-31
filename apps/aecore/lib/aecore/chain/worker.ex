@@ -74,7 +74,7 @@ defmodule Aecore.Chain.Worker do
   defp get_blocks(blocks_acc, next_block_hash, size) do
     cond do
       size > 0 ->
-        case(GenServer.call(__MODULE__, {:get_block_by_hash, next_block_hash, :bin})) do
+        case(GenServer.call(__MODULE__, {:get_block, next_block_hash})) do
           {:error, _} -> blocks_acc
           block ->
             updated_block_acc = [block | blocks_acc]
