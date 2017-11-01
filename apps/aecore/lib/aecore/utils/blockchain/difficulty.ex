@@ -1,7 +1,7 @@
 defmodule Aecore.Utils.Blockchain.Difficulty do
   alias Aecore.Chain.Worker, as: Chain
 
-  @number_of_blocks 100
+  @number_of_blocks 5
   @max_difficulty_change 2
   @target_distance 60000
 

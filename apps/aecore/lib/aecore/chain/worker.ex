@@ -9,6 +9,7 @@ defmodule Aecore.Chain.Worker do
   alias Aecore.Chain.ChainState
   alias Aecore.Txs.Pool.Worker, as: Pool
   alias Aecore.Utils.Blockchain.BlockValidation
+  alias Aecore.Utils.Blockchain.Difficulty
 
   use GenServer
 
@@ -109,11 +110,15 @@ defmodule Aecore.Chain.Worker do
 
   def handle_call({:add_block, %Block{} = block}, _from, state) do
     {chain, chain_state} = state
+
+    #blocks_for_difficulty_calculation = List.insert_at(blocks_for_difficulty_calculation, 0, chain[block.header.prev_hash])
+    #blocks_for_difficulty_calculation = [chain[block.header.prev_hash] | []]
+
     prev_block_chain_state = chain_state[block.header.prev_hash]
     new_block_state = ChainState.calculate_block_state(block.txs)
     new_chain_state = ChainState.calculate_chain_state(new_block_state, prev_block_chain_state)
 
-    BlockValidation.validate_block!(block, chain[block.header.prev_hash], new_chain_state)
+    BlockValidation.validate_block!(block, chain[block.header.prev_hash], new_chain_state, IO.inspect(blocks_for_difficulty_calculation))
 
     Enum.each(block.txs, fn(tx) -> Pool.remove_transaction(tx) end)
 

@@ -114,6 +114,7 @@ defmodule Aecore.Miner.Worker do
     ordered_txs_list = Enum.sort(txs_list, fn(tx1, tx2) -> tx1.data.nonce < tx2.data.nonce end)
 
     blocks_for_difficulty_calculation = Chain.get_blocks(latest_block_hash, Difficulty.get_number_of_blocks())
+    
     previous_block = cond do
       latest_block == Block.genesis_block() -> nil
       true ->
@@ -121,7 +122,7 @@ defmodule Aecore.Miner.Worker do
         Enum.at(blocks, 1)
     end
 
-    BlockValidation.validate_block!(latest_block, previous_block, chain_state)
+    BlockValidation.validate_block!(latest_block, previous_block, chain_state, blocks_for_difficulty_calculation)
 
     valid_txs = BlockValidation.filter_invalid_transactions_chainstate(ordered_txs_list, chain_state)
     {_, pubkey} = Keys.pubkey()
@@ -151,10 +152,10 @@ defmodule Aecore.Miner.Worker do
                            | nonce: start_nonce + @nonce_per_cycle}) do
       {:ok, mined_header} ->
         block = %Block{header: mined_header, txs: valid_txs}
-        Chain.add_block(block)
         Logger.info(fn ->
           "Mined block ##{block.header.height}, difficulty target #{block.header.difficulty_target}, nonce #{block.header.nonce}"
           end)
+        Chain.add_block(block)
         {:block_found, 0}
 
       {:error, _message} ->
